@@ -1,0 +1,405 @@
+import pickle
+import PySimpleGUI as sg
+import sys
+import os
+
+def main():
+    main_menu()
+def main_menu():
+    topic_file = 'topics.dat'
+    layout = [[sg.Button('See topics')], [sg.Button('Make a new topic')], [sg.Button('Close')] ]
+    window = sg.Window('Window', layout)
+    while True:
+        event, values = window.read()
+        if event == 'Close':
+            break
+        if event == sg.WIN_CLOSED:
+            break
+        if event == 'Make a new topic':
+            topic_creator()
+        if event == 'See topics':
+            if os.path.isfile('topics.dat'):
+                openfile = open('topics.dat','rb')
+                topics = pickle.load(openfile)
+
+                length = len(topics) - 1
+                count = 0
+                if not topics:
+                    layout = [[sg.Text('You have not made any topics')], ]
+                    error_message = sg.Window('Error message', layout)
+                    while True:
+                        event, values = error_message.read()
+                        if event == sg.WIN_CLOSED:
+                            error_message.close()
+                            break
+                else:
+
+                    while count <= length:
+
+                        if count == 0:
+                            layout = []
+                            temp = topics[count][0]
+                            layout.append([[sg.Button(temp)]])
+                        elif count == length:
+                            temp = [sg.Button(topics[count][0])]
+                            layout.append(temp)
+
+                        else:
+                            temp = [sg.Button( topics[count][0] )]
+                            layout.append(temp)
+                        count = count + 1
+
+                    layout.append([sg.Button('Delete a topic')])
+
+
+
+
+
+
+
+                    see_topics = sg.Window('Error message', layout)
+                    while True:
+                        event, values = see_topics.read()
+                        count_new = 0
+                        while count_new< len(topics):
+
+                            temp  = topics[count_new][0]
+
+                            if event == temp:
+                                subject_menu(temp)
+                            count_new = count_new + 1
+                        if event == 'Delete a topic':
+                            delete_item(topic_file)
+                        count_new = 0
+
+
+                        if event == sg.WIN_CLOSED:
+                            see_topics.close()
+                            break
+                        count = count + 1
+            else:
+                layout = [[sg.Text('You have not made any topics')],]
+                error_message = sg.Window('Error message', layout)
+                while True:
+                    event,values = error_message.read()
+                    if event == sg.WIN_CLOSED:
+                        error_message.close()
+                        break
+def topic_creator():
+    if os.path.isfile('topics.dat'):
+        openfile = open('topics.dat','rb')
+        topics = pickle.load(openfile)
+    else:
+        topics = []
+
+    layout = [[sg.Text('Name your topic')], [sg.InputText('', size=(10,1), key='input_topic')],[sg.Button('Submit')]]
+    topic_c = sg.Window('Topic creator', layout)
+    while True:
+        event, values = topic_c.read()
+        if event == 'Submit':
+            input_topic = values['input_topic']
+            topic_c.close()
+            break
+        if event == sg.WIN_CLOSED:
+            topic_c.close()
+            break
+    if event == sg.WIN_CLOSED:
+        topic_c.close()
+    else:
+        topics.append((input_topic, ['']))
+        openfile = open('topics.dat', 'wb')
+        pickle.dump(topics, openfile)
+        openfile.close()
+def delete_item(topic_file):
+    print(topic_file)
+    if os.path.isfile(topic_file):
+        openfile = open(topic_file,'rb')
+        topics_temp = pickle.load(openfile)
+    else:
+        topics_temp = []
+
+    print(topics_temp)
+    print(len(topics_temp))
+    layout = [[sg.Text('Type the name of the topic you would like to delete')], [sg.InputText('', size=(10,1), key='deleted_topic')], [sg.Button('Submit')]]
+    delete_window = sg.Window('Delete window', layout)
+    while True:
+        event, values = delete_window.read()
+
+        print(topics_temp)
+        if event == 'Submit':
+            input_topic = values['deleted_topic']
+            length = len(topics_temp)
+
+
+            count = 0
+            while count<length:
+                print(count)
+                input_check = topics_temp[count][0]
+                print(input_topic)
+                print(input_check)
+                if len(topics_temp) == 1:
+                    topics_temp = []
+                    set_dump = topic_file[0][0]
+                    openfile_2 = open(set_dump,'wb')
+                    pickle.dump([],openfile_2)
+                    openfile_2.close()
+                    openfile = open(topic_file, 'wb')
+                    pickle.dump(topics_temp, openfile)
+                    topics_temp = pickle.dump(topics_temp, openfile)
+                    openfile.close()
+
+                    break
+                    count = length + 5
+                elif input_topic == input_check:
+                    print('topics temp')
+                    print(len(topics_temp))
+                    if len(topics_temp) == 1:
+
+                        topics_temp = []
+                        openfile = open(topic_file, 'wb')
+                        pickle.dump(topics_temp, openfile)
+                        topics_temp = pickle.dump(topics_temp, openfile)
+                        openfile.close()
+                        break
+
+                    else:
+                        del topics_temp[count]
+
+
+                        openfile = open(topic_file,'wb')
+                        pickle.dump(topics_temp, openfile)
+                        openfile.close()
+                        break
+                else:
+
+                    count = count + 1
+            delete_window.close()
+        if event == sg.WINDOW_CLOSED:
+            break
+
+
+
+def subject_menu(temp):
+
+    if os.path.isfile(temp):
+        openfile = open(temp, 'rb')
+        temp_file = pickle.load(openfile)
+
+    else:
+        temp_file = []
+    delete_temp = temp
+
+    if not temp_file:
+        layout = [[sg.Text("You don't have any sets for this topic, add one below")],
+                  [sg.InputText('', size=(10, 1), key='added_set')], [sg.Button('Submit')]]
+        set_window = sg.Window('Set window', layout)
+        while True:
+            event, values = set_window.read()
+            if event == sg.WINDOW_CLOSED:
+                set_window.close()
+                break
+            if event == 'Submit':
+                input_set = values['added_set']
+                set_window.close()
+                temp_file.append((input_set,[]))
+                break
+        openfile = open(temp, 'wb')
+        pickle.dump(temp_file, openfile)
+        openfile.close()
+
+    else:
+        length = len(temp_file)-1
+        count = 0
+
+        while count <= length:
+
+            if count == 0:
+                layout = []
+                temp = temp_file[count][0]
+                layout.append([[sg.Button(temp)]])
+            elif count == length:
+                temp = [sg.Button(temp_file[count][0])]
+                layout.append(temp)
+
+            else:
+                temp = [sg.Button(temp_file[count][0])]
+                layout.append(temp)
+            count = count + 1
+        layout.append([sg.Button('Add a topic')])
+        layout.append([sg.Button('Delete a topic')])
+
+
+
+
+        see_topics = sg.Window('Error message', layout)
+        while True:
+            event, values = see_topics.read()
+            count_new = 0
+            while count_new < len(temp_file):
+
+                temp_new = temp_file[count_new][0]
+
+                if event == temp_new:
+                    flashcard_structure(count_new, delete_temp)
+                    print(delete_temp)
+                    print('You clicked on the button called', temp_new)
+                count_new = count_new + 1
+            if event == 'Delete a topic':
+                delete_item(delete_temp)
+            count_new = 0
+
+            if event == sg.WIN_CLOSED:
+                see_topics.close()
+                break
+            if event == 'Add a topic':
+                layout = [[sg.Text("Name your topic")],
+                          [sg.InputText('', size=(10, 1), key='added_set')], [sg.Button('Submit')]]
+                set_window = sg.Window('Set window', layout)
+                while True:
+                    event, values = set_window.read()
+                    if event == sg.WINDOW_CLOSED:
+                        set_window.close()
+                        break
+                    if event == 'Submit':
+                        print(temp_file)
+                        input_set = values['added_set']
+                        set_window.close()
+                        temp_file.append((input_set, ['']))
+                        break
+                openfile = open(delete_temp, 'wb')
+                pickle.dump(temp_file, openfile)
+                openfile.close()
+            count = count + 1
+
+
+def flashcard_structure(count_new, delete_temp):
+
+    print(count_new)
+    openfile = open(delete_temp, 'rb')
+    temp = pickle.load(openfile)
+    layout = [[sg.Button('Study flashcards')], [sg.Button('Add flashcards')]]
+    flashcard_sys = sg.Window('Flashcard sys', layout)
+    count = 0
+    while True:
+        event, values = flashcard_sys.read()
+        if event == sg.WINDOW_CLOSED:
+            flashcard_sys.close()
+            break
+        if event == 'Study flashcards':
+
+            if not temp[count_new][1]:
+                layout = [[sg.Text("You don't have any flashcards to study")]]
+                flashcard_error = sg.Window('Flashcard error', layout)
+                while True:
+                    event, values = flashcard_error.read()
+                    if event == sg.WINDOW_CLOSED:
+                        flashcard_error.close()
+                        break
+
+
+            else:
+                while count<len(temp[count_new][1]):
+
+                    [term, termimage, definition, definitionimage] = temp[count_new][1][count].split('#')
+                    if termimage == '0':
+                        layout = [[sg.Text(term)], [sg.InputText('', size=(10, 1), key='Enter')], [sg.Button('Enter your answer')]]
+                    else:
+                        layout = [[sg.Text(term)],[sg.InputText('', size=(10, 1), key='Enter')], [sg.Image(filename=termimage)], [sg.Button('Enter your answer')]]
+                    term_window = sg.Window('Term window', layout)
+                    while True:
+                        event, values = term_window.read()
+                        if event == sg.WINDOW_CLOSED:
+                            term_window.close()
+                            break
+                        if event == 'Enter your answer':
+
+                            answer_input = values['Enter']
+
+                            if definitionimage == '0':
+                                layout = [[sg.Text('Your answer was')], [sg.Text(answer_input)], [sg.Text('The correct answer was')],[sg.Text(definition)], [sg.Button('Next flashcard')], [sg.Button('Remove this flashcard')]]
+                            else:
+                                layout = [[sg.Text('Your answer was')],[sg.Text(answer_input)], [sg.Text('The correct answer was')],[sg.Text(definition)],[sg.Image(filename=definitionimage)], [sg.Button('Next flashcard')], [sg.Button('Remove this flashcard')]]
+                            def_window = sg.Window('Definition window', layout)
+                            while True:
+                                event, values = def_window.read()
+                                if event == sg.WINDOW_CLOSED:
+                                    def_window.close()
+                                    term_window.close()
+                                    break
+                                if event == 'Next flashcard':
+                                    break
+                                if event == 'Remove this flashcard':
+                                    del temp[count_new][1][count]
+                                    openfile = open(delete_temp, 'wb')
+                                    pickle.dump(temp, openfile)
+                                    def_window.close()
+                                    break
+
+
+                        break
+                    count = count + 1
+                if count == len(temp[count_new][1]):
+                    layout = [[sg.Text('You have studied all the flashcards in this set')]]
+                    error_message = sg.Window('Finished', layout)
+                    while True:
+                        event, values = error_message.read()
+                        if event == sg.WINDOW_CLOSED:
+                            error_message.close()
+
+                            break
+
+
+
+
+        if event == 'Add flashcards':
+            layout = [[sg.Text('Enter a term and/or image')],
+                      [sg.FileBrowse('Term image', key='term',file_types=(("Image Files", "*.png"),))],
+                      [sg.InputText('', size=(10, 1), key='Question')],
+                      [sg.Text('Enter a definition')],
+                      [sg.FileBrowse('Definition image', key='def',file_types=(("Image files", "*.png"),))],
+                      [sg.InputText('', size=(10, 1), key='Answer')],
+                      [sg.Button('Submit')]]
+            add_flashcards = sg.Window('Add flashcard', layout)
+            while True:
+                event, values = add_flashcards.read()
+                if event == sg.WINDOW_CLOSED:
+                    add_flashcards.close()
+                    break
+                if event == 'Submit':
+                    term_image = str((values['term']))
+                    def_image = str((values['def']))
+                    input_term = values['Question']
+                    input_def = values['Answer']
+                    if not def_image:
+                        def_image = '0'
+                    if not term_image:
+                        term_image = '0'
+                    append_text = input_term + '#' + term_image + '#' + input_def + '#' + def_image
+
+                    print(append_text)
+                    print(count_new)
+                    temp[count_new][1].append(append_text)
+                    openfile = open(delete_temp, 'wb')
+                    pickle.dump(temp, openfile)
+                    openfile.close()
+                    add_flashcards.close()
+                    continue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+main()
